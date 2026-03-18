@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken")
+const tokenBlackListModel = require('../models/blacklist.model')
 
 function authUser(req,res,next){
     const token = req.cookies.token
@@ -9,6 +10,12 @@ function authUser(req,res,next){
         })
     }
 
+    const isBlackListed = tokenBlackListModel.findOne({token})
+    if(isBlackListed){
+        return res.status(401).json({
+            message:"Token is invalid.Please login again."
+        })
+    }
     try{
         const decoded = jwt.verify(token,process.env.JWT_SECRET)
         req.user = decoded
